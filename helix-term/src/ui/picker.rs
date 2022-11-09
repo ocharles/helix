@@ -736,17 +736,18 @@ impl<T: Item + Send + 'static> Component for DynamicPicker<T> {
 
         cx.jobs.callback(async move {
             let new_options = new_options.await?;
-            let callback: crate::job::Callback = Box::new(move |_editor, compositor| {
-                // Wrapping of pickers in overlay is done outside the picker code,
-                // so this is fragile and will break if wrapped in some other widget.
-                let picker = match compositor.find_id::<Overlay<DynamicPicker<T>>>(Self::ID) {
-                    Some(overlay) => &mut overlay.content.file_picker.picker,
-                    None => return,
-                };
-                picker.options = new_options;
-                picker.cursor = 0;
-                picker.force_score();
-            });
+            let callback =
+                crate::job::Callback::EditorCompositor(Box::new(move |_editor, compositor| {
+                    // Wrapping of pickers in overlay is done outside the picker code,
+                    // so this is fragile and will break if wrapped in some other widget.
+                    let picker = match compositor.find_id::<Overlay<DynamicPicker<T>>>(Self::ID) {
+                        Some(overlay) => &mut overlay.content.file_picker.picker,
+                        None => return,
+                    };
+                    picker.options = new_options;
+                    picker.cursor = 0;
+                    picker.force_score();
+                }));
             anyhow::Ok(callback)
         });
         EventResult::Consumed(None)
