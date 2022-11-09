@@ -111,23 +111,31 @@
 ; -------
 
 (for_expression
-  "for" @keyword.control)
+  "for" @keyword.control.repeat)
 ((identifier) @keyword.control
   (#match? @keyword.control "^yield$"))
-[
-  "while"
-  "loop"
-  "in"
-  "break"
-  "continue"
 
+"in" @keyword.control
+
+[
   "match"
   "if"
   "else"
+] @keyword.control.conditional
+
+[
+  "while"
+  "loop"
+] @keyword.control.repeat
+
+[
+  "break"
+  "continue"
+
   "return"
 
   "await"
-] @keyword.control
+] @keyword.control.return
 
 "use" @keyword.control.import
 (mod_item "mod" @keyword.control.import !body)
@@ -143,23 +151,27 @@
   "mod"
   "extern"
 
-  "struct"
-  "enum"
   "impl"
   "where"
   "trait"
   "for"
 
-  "type"
-  "union"
   "unsafe"
   "default"
   "macro_rules!"
 
-  "let"
-
   "async"
 ] @keyword
+
+[
+  "struct"
+  "enum"
+  "union"
+
+  "type"
+] @keyword.storage.type
+
+"let" @keyword.storage
 
 "fn" @keyword.function
 
@@ -262,7 +274,11 @@
 (meta_item
   (identifier) @function.macro)
 (attr_item
-  (identifier) @function.macro
+  [
+    (identifier) @function.macro
+    (scoped_identifier
+      name: (identifier) @function.macro)
+  ]
   (token_tree (identifier) @function.macro)?)
 
 (inner_attribute_item) @attribute
