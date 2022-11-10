@@ -1890,7 +1890,7 @@ fn global_search(cx: &mut Context) {
         },
     );
 
-    let get_files = move |query: String, _cx: &mut compositor::Context| {
+    let get_files = move |query: String, cx: &mut compositor::Context| {
         // Show empty results for an empty query.
         if query.is_empty() {
             return async move { Ok(Vec::new()) }.boxed();
@@ -1903,12 +1903,21 @@ fn global_search(cx: &mut Context) {
             .build(&query)
         {
             Ok(matcher) => matcher,
-            // TODO: improve error message. We need the compositor here to add a
-            // popup like in regex_prompt. The builder error here contains newlines
-            // to point out syntax errors and we need a popup to render it well
-            // (rather than the statusline).
-            Err(_) => {
-                return async move { Err(anyhow::anyhow!("Failed to compile regex")) }.boxed()
+            Err(err) => {
+                cx.jobs.callback(async {
+                    let callback =
+                        Callback::EditorCompositor(Box::new(move |_editor, compositor| {
+                            let contents = ui::Text::new(format!("{}", err));
+                            let size = compositor.size();
+                            let mut popup = Popup::new("invalid-regex", contents)
+                                .position(Some(Position::new(size.height as usize - 2, 0)))
+                                .auto_close(true);
+                            popup.required_size((size.width, size.height));
+                            compositor.replace_or_push("invalid-regex", popup);
+                        }));
+                    Ok(callback)
+                });
+                return async move { Err(anyhow::anyhow!("Failed to compile regex")) }.boxed();
             }
         };
 
