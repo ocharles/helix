@@ -1861,9 +1861,7 @@ fn global_search(cx: &mut Context) {
 
     let current_path = doc_mut!(cx.editor).path().cloned();
 
-    let picker = FilePicker::new(
-        // TODO: find initial results? If the '/' register has a query, use that as the
-        // initial query.
+    let mut picker = FilePicker::new(
         Vec::new(),
         current_path,
         move |cx, FileResult { path, line_num, .. }, action| {
@@ -1889,6 +1887,10 @@ fn global_search(cx: &mut Context) {
             Some((path.clone(), Some((*line_num, *line_num))))
         },
     );
+
+    if let Some(initial_query) = cx.editor.registers.last(cx.register.unwrap_or('/')) {
+        picker = picker.with_line(initial_query.clone(), cx.editor);
+    }
 
     let get_files = move |query: String, cx: &mut compositor::Context| {
         // Show empty results for an empty query.
