@@ -377,8 +377,8 @@ pub fn workspace_symbol_picker(cx: &mut Context) {
                 None => return,
             };
             let picker = sym_picker(symbols, current_url, offset_encoding);
-            let get_symbols = |query: String, editor: &mut Editor| {
-                let doc = doc!(editor);
+            let get_symbols = |query: String, cx: &mut compositor::Context| {
+                let doc = doc!(cx.editor);
                 let language_server = match doc.language_server() {
                     Some(s) => s,
                     None => {

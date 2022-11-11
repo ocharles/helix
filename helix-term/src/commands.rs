@@ -1890,7 +1890,7 @@ fn global_search(cx: &mut Context) {
         },
     );
 
-    let get_files = move |query: String, _editor: &mut Editor| {
+    let get_files = move |query: String, _cx: &mut compositor::Context| {
         // Show empty results for an empty query.
         if query.is_empty() {
             return async move { Ok(Vec::new()) }.boxed();
