@@ -47,6 +47,7 @@
       rev = grammar.source.rev;
       ref = grammar.source.ref or "HEAD";
       shallow = true;
+      allRefs = true;
     };
     sourceGitHub = builtins.fetchTree {
       type = "github";
