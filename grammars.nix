@@ -41,12 +41,11 @@
   gitGrammars = builtins.filter isGitGrammar grammarsToUse;
   buildGrammar = grammar: let
     gh = toGitHubFetcher grammar.source.git;
-    sourceGit = builtins.fetchTree {
-      type = "git";
+    sourceGit = builtins.fetchGit {
       url = grammar.source.git;
       rev = grammar.source.rev;
       ref = grammar.source.ref or "HEAD";
-      shallow = true;
+      allRefs = true;
     };
     sourceGitHub = builtins.fetchTree {
       type = "github";
